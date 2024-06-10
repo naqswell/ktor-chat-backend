@@ -1,12 +1,19 @@
 package com.naqswell
 
-import com.naqswell.plugins.*
-import io.ktor.server.application.*
+import com.naqswell.config.DeploymentHocon
+import com.naqswell.plugins.configureRouting
+import com.sksamuel.hoplite.ConfigLoaderBuilder
+import com.sksamuel.hoplite.addResourceSource
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 
-fun main(args: Array<String>) {
-    io.ktor.server.netty.EngineMain.main(args)
-}
+fun main() {
+    val deployment = ConfigLoaderBuilder.default()
+        .addResourceSource("/deployment.conf")
+        .build()
+        .loadConfigOrThrow<DeploymentHocon>()
 
-fun Application.module() {
-    configureRouting()
+    embeddedServer(Netty, port = deployment.port) {
+        configureRouting()
+    }.start(wait = true)
 }
