@@ -5,6 +5,7 @@ val logback_version: String by project
 plugins {
     kotlin("jvm") version "2.0.0"
     id("io.ktor.plugin") version "2.3.11"
+    id("it.nicolasfarabegoli.conventional-commits") version "3.1.3"
 }
 
 group = "com.naqswell"
@@ -15,6 +16,12 @@ application {
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+conventionalCommits {
+    warningIfNoGitRoot = true
+    successMessage = "Commit message meets Conventional Commit standards..."
+    failureMessage = "The commit message does not meet the Conventional Commit standard"
 }
 
 repositories {
