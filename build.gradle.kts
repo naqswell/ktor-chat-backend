@@ -40,4 +40,7 @@ dependencies {
     testImplementation(libs.kotlin.test.junit)
 
     implementation(libs.bundles.hoplite)
+
+    implementation(platform(libs.koin.bom))
+    implementation(libs.bundles.koin)
 }
