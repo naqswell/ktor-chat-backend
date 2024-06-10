@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
     alias(libs.plugins.conventionalCommits)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 group = "com.naqswell"
@@ -43,4 +44,5 @@ dependencies {
 
     implementation(platform(libs.koin.bom))
     implementation(libs.bundles.koin)
+    implementation(libs.mongodb.coroutines)
 }
