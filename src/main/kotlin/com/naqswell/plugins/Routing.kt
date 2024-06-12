@@ -1,13 +1,17 @@
 package com.naqswell.plugins
 
+import com.naqswell.features.auth.resource.loginEndpoint
+import com.naqswell.features.auth.resource.signupEndpoint
 import io.ktor.server.application.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Application.configureRouting() {
-    routing {
-        get("/") {
-            call.respondText("Hello World!")
-        }
+
+    install(Routing) {
+
+        signupEndpoint()
+        loginEndpoint()
+
     }
+
 }
