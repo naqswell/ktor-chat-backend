@@ -1,6 +1,7 @@
 package com.naqswell
 
 import com.naqswell.config.DeploymentHocon
+import com.naqswell.plugins.configureDi
 import com.naqswell.plugins.configureRouting
 import com.naqswell.plugins.configureSerialization
 import com.sksamuel.hoplite.ConfigLoaderBuilder
@@ -15,6 +16,7 @@ fun main() {
         .loadConfigOrThrow<DeploymentHocon>()
 
     embeddedServer(Netty, port = deployment.port) {
+        configureDi()
         configureSerialization()
         configureRouting()
     }.start(wait = true)
