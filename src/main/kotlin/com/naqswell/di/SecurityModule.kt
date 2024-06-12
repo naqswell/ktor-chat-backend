@@ -1,6 +1,8 @@
 package com.naqswell.di
 
 import com.naqswell.config.AuthHocon
+import com.naqswell.security.hashing.HashingService
+import com.naqswell.security.hashing.HashingServiceImpl
 import com.naqswell.security.token.ExpirationMilliSecondsConfig
 import com.naqswell.security.token.JwtTokenService
 import com.naqswell.security.token.TokenConfig
@@ -24,4 +26,6 @@ val securityModule = module {
     }
 
     single<TokenService> { JwtTokenService() }
+
+    single<HashingService> { HashingServiceImpl(get()) }
 }
