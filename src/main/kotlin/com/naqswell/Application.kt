@@ -2,6 +2,7 @@ package com.naqswell
 
 import com.naqswell.config.DeploymentHocon
 import com.naqswell.plugins.configureRouting
+import com.naqswell.plugins.configureSerialization
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.addResourceSource
 import io.ktor.server.engine.*
@@ -14,6 +15,7 @@ fun main() {
         .loadConfigOrThrow<DeploymentHocon>()
 
     embeddedServer(Netty, port = deployment.port) {
+        configureSerialization()
         configureRouting()
     }.start(wait = true)
 }
