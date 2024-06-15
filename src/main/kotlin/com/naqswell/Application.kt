@@ -1,10 +1,7 @@
 package com.naqswell
 
 import com.naqswell.config.DeploymentHocon
-import com.naqswell.plugins.configureDi
-import com.naqswell.plugins.configureJwt
-import com.naqswell.plugins.configureRouting
-import com.naqswell.plugins.configureSerialization
+import com.naqswell.plugins.*
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.addResourceSource
 import io.ktor.server.engine.*
@@ -19,6 +16,7 @@ fun main() {
     embeddedServer(Netty, port = deployment.port) {
         configureDi()
         configureJwt()
+        configureWebsockets()
         configureSerialization()
         configureRouting()
     }.start(wait = true)
