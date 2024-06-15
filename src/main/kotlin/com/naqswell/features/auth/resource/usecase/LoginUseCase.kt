@@ -33,7 +33,7 @@ internal class LoginUseCase(
                 message = "ERROR_MISSING_PASSWORD"
             )
 
-        val savedUser = repository.getUserByEmail(request.email)
+        val savedUser = repository.getByEmail(request.email)
             ?: run {
                 return ServerResponse.ErrorStatus(
                     status = HttpStatusCode.UnprocessableEntity,

@@ -20,7 +20,7 @@ internal class UserDataSourceImpl(
     private val users
         get() = database.getCollection<UserDbo>(USER_AUTH_COLLECTION)
 
-    override suspend fun insertUser(userModel: UserModel): UserDbo? {
+    override suspend fun insert(userModel: UserModel): UserDbo? {
         val userDbo = userModel.toDbo()
         try {
             users.insertOne(userDbo)
@@ -31,7 +31,7 @@ internal class UserDataSourceImpl(
         return userDbo
     }
 
-    override suspend fun updateUser(old: UserModel, new: UserModel): UserDbo? {
+    override suspend fun update(old: UserModel, new: UserModel): UserDbo? {
         try {
             val filter = Filters.eq(UserDbo::refreshToken.name, old.refreshToken)
             users.replaceOne(
@@ -45,14 +45,33 @@ internal class UserDataSourceImpl(
         return new.toDbo()
     }
 
-    override suspend fun getUserByEmail(email: String): UserDbo? {
+    override suspend fun getByEmail(email: String): UserDbo? {
         return users
             .withDocumentClass<UserDbo>()
             .find(Filters.eq(UserDbo::email.name, email))
             .firstOrNull()
     }
 
-    override suspend fun getUserByToken(token: String): UserDbo? {
+    override suspend fun getByUsername(username: String): UserDbo? {
+        return users
+            .withDocumentClass<UserDbo>()
+            .find(Filters.eq(UserDbo::username.name, username))
+            .firstOrNull()
+    }
+
+    override suspend fun getByUsernameOrEmail(username: String, email: String): UserDbo? {
+        return users
+            .withDocumentClass<UserDbo>()
+            .find(
+                Filters.or(
+                    Filters.eq(UserDbo::username.name, username),
+                    Filters.eq(UserDbo::email.name, email)
+                )
+            )
+            .firstOrNull()
+    }
+
+    override suspend fun getByToken(token: String): UserDbo? {
         return users
             .withDocumentClass<UserDbo>()
             .find(Filters.eq(UserDbo::refreshToken.name, token))
