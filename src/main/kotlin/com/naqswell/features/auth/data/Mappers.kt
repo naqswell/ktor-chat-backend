@@ -1,6 +1,6 @@
 package com.naqswell.features.auth.data
 
-import com.naqswell.features.auth.data.dbo.UserDbo
+import com.naqswell.db.dbo.UserDbo
 import com.naqswell.features.auth.domain.model.UserModel
 import com.naqswell.features.auth.resource.dto.request.SignupRequestDto
 import com.naqswell.features.auth.resource.dto.response.UserModelDto

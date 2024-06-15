@@ -1,4 +1,4 @@
-package com.naqswell.features.auth.data.dbo
+package com.naqswell.db.dbo
 
 import kotlinx.serialization.Serializable
 import org.bson.codecs.pojo.annotations.BsonId

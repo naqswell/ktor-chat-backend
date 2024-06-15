@@ -1,6 +1,6 @@
 package com.naqswell.features.auth.data.datasource.local
 
-import com.naqswell.features.auth.data.dbo.UserDbo
+import com.naqswell.db.dbo.UserDbo
 import com.naqswell.features.auth.domain.model.UserModel
 
 internal interface UserDataSource {

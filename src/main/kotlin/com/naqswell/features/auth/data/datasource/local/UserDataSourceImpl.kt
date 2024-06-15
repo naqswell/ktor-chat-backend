@@ -3,7 +3,7 @@ package com.naqswell.features.auth.data.datasource.local
 import com.mongodb.MongoException
 import com.mongodb.client.model.Filters
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
-import com.naqswell.features.auth.data.dbo.UserDbo
+import com.naqswell.db.dbo.UserDbo
 import com.naqswell.features.auth.data.toDbo
 import com.naqswell.features.auth.data.toDboWithNullId
 import com.naqswell.features.auth.domain.model.UserModel
