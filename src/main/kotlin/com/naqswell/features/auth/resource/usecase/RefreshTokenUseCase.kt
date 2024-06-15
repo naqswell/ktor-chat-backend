@@ -19,7 +19,7 @@ internal class RefreshTokenUseCase(
     suspend operator fun invoke(request: RefreshTokenDto): ServerResponse<AuthResponseDto> {
 
         /** Check if refresh token is actual **/
-        val savedUser = userRepository.getUserByToken(request.token)
+        val savedUser = userRepository.getByToken(request.token)
             ?: run {
                 return ServerResponse.ErrorStatus(
                     status = HttpStatusCode.Forbidden,
@@ -48,7 +48,7 @@ internal class RefreshTokenUseCase(
         val refreshToken = tokenService.generate(tokenConfig, tokenConfig.expirationSeconds.refreshToken, userClaim)
 
         /** Update refresh token in db **/
-        userRepository.updateUser(old = savedUser, new = savedUser.copy(refreshToken = refreshToken))
+        userRepository.update(old = savedUser, new = savedUser.copy(refreshToken = refreshToken))
 
         return ServerResponse.Data(
             AuthResponseDto(

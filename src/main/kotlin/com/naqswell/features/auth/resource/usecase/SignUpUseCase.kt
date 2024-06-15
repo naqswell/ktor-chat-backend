@@ -26,36 +26,36 @@ internal class SignUpUseCase(
                 message = "Invalid username, email or password"
             )
 
-        val savedUser = userRepository.getUserByEmail(request.email)
-        return if (savedUser == null) {
 
-            val userClaim = TokenClaim(
-                name = "userEmail",
-                value = request.email
-            )
+        // Check db for existing user by username, to check username is unique
+        return when (userRepository.getByUsernameOrEmail(username = request.username, email = request.email)) {
+            // Is new user
+            null -> {
+                val userClaim = TokenClaim(name = "userEmail", value = request.email)
 
-            val accessToken = tokenService.generate(tokenConfig, tokenConfig.expirationSeconds.accessToken, userClaim)
-            val refreshToken = tokenService.generate(tokenConfig, tokenConfig.expirationSeconds.refreshToken, userClaim)
+                val accessToken = tokenService.generate(tokenConfig, tokenConfig.expirationSeconds.accessToken, userClaim)
+                val refreshToken = tokenService.generate(tokenConfig, tokenConfig.expirationSeconds.refreshToken, userClaim)
 
-            val saltedHash = hashingService.generateSaltedHash(request.password)
+                val saltedHash = hashingService.generateSaltedHash(request.password)
 
-            val userModel = request.toUserModel(
-                salt = saltedHash.salt,
-                hash = saltedHash.hash,
-                accessToken = accessToken,
-                refreshToken = refreshToken
-            )
-
-            ServerResponse.Data(
-                AuthResponseDto(
-                    data = userRepository.insertUser(userModel)?.toDto(),
+                val userModel = request.toUserModel(
+                    salt = saltedHash.salt,
+                    hash = saltedHash.hash,
                     accessToken = accessToken,
                     refreshToken = refreshToken
                 )
-            )
-        } else ServerResponse.ErrorStatus(
-            status = HttpStatusCode.Conflict,
-            message = "User already exist"
-        )
+
+                ServerResponse.Data(
+                    AuthResponseDto(
+                        data = userRepository.insert(userModel)?.toDto(),
+                        accessToken = accessToken,
+                        refreshToken = refreshToken
+                    )
+                )
+            }
+
+            // User already exist
+            else -> ServerResponse.ErrorStatus(status = HttpStatusCode.Conflict, message = "User already exist")
+        }
     }
 }
