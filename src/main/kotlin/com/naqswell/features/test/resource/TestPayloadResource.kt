@@ -11,21 +11,23 @@ import org.koin.ktor.ext.inject
 
 const val ENDPOINT_TEST_PAYLOAD = "/test/auth"
 
-fun Route.testEmailPayloadEndpoint() {
-    val config: AuthHocon by inject()
+fun Application.testEmailPayloadEndpoint() {
+    val config: AuthHocon by inject<AuthHocon>()
 
-    post(ENDPOINT_TEST_PAYLOAD) {
-        val getPayload: (String) -> String? = { payload: String ->
-            call.principal<JWTPrincipal>()?.payload?.getClaim(payload)?.asString()
+    routing {
+        post(ENDPOINT_TEST_PAYLOAD) {//todo: revert to Routing extension after new koin fix
+            val getPayload: (String) -> String? = { payload: String ->
+                call.principal<JWTPrincipal>()?.payload?.getClaim(payload)?.asString()
+            }
+
+            val payload = config.jwt.payloads.user.userEmail
+            val email = getPayload(payload)
+
+            val response = TestResponseDto(
+                data = "$email"
+            )
+
+            call.respond(response)
         }
-
-        val payload = config.jwt.payloads.user.userEmail
-        val email = getPayload(payload)
-
-        val response = TestResponseDto(
-            data = "$email"
-        )
-
-        call.respond(response)
     }
 }

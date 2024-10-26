@@ -3,6 +3,8 @@ val kotlin_version: String by project
 val logback_version: String by project
 
 plugins {
+    alias(libs.plugins.benManesVersions)
+    alias(libs.plugins.nlittlerobotsVersionCatalogUpdate)
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
     alias(libs.plugins.conventionalCommits)
@@ -38,7 +40,6 @@ dependencies {
     implementation(libs.bundles.ktor.server)
     implementation(libs.logback.classic)
     testImplementation(libs.ktor.server.tests)
-    testImplementation(libs.kotlin.test.junit)
 
     implementation(libs.bundles.hoplite)
 
