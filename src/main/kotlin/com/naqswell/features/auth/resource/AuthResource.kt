@@ -17,42 +17,48 @@ internal const val ENDPOINT_SIGNUP = "/auth/signup"
 internal const val ENDPOINT_LOGIN = "/auth/login"
 internal const val ENDPOINT_REFRESH = "/auth/refreshToken"
 
-fun Route.signupEndpoint() {
-    val useCase: SignUpUseCase by inject()
+fun Application.signupEndpoint() { //todo: revert to Routing extension after new koin fix
+    val useCase: SignUpUseCase by inject<SignUpUseCase>()
 
-    post(ENDPOINT_SIGNUP) {
-        val request = call.receive<SignupRequestDto>()
+    routing {
+        post(ENDPOINT_SIGNUP) {
+            val request = call.receive<SignupRequestDto>()
 
-        when (val response = useCase(request = request)) {
-            is ServerResponse.Data -> call.respond(response.data)
-            is ServerResponse.ErrorStatus -> call.respond(status = response.status, message = response.message)
+            when (val response = useCase(request = request)) {
+                is ServerResponse.Data -> call.respond(response.data)
+                is ServerResponse.ErrorStatus -> call.respond(status = response.status, message = response.message)
+            }
         }
     }
 }
 
 
-fun Route.loginEndpoint() {
-    val useCase: LoginUseCase by inject()
+fun Application.loginEndpoint() { //todo: revert to Routing extension after new koin fix
+    val useCase: LoginUseCase by inject<LoginUseCase>()
 
-    post(ENDPOINT_LOGIN) {
-        val request = call.receive<LoginRequestDto>()
+    routing {
+        post(ENDPOINT_LOGIN) {
+            val request = call.receive<LoginRequestDto>()
 
-        when (val response = useCase(request = request)) {
-            is ServerResponse.Data -> call.respond(response.data)
-            is ServerResponse.ErrorStatus -> call.respond(status = response.status, message = response.message)
+            when (val response = useCase(request = request)) {
+                is ServerResponse.Data -> call.respond(response.data)
+                is ServerResponse.ErrorStatus -> call.respond(status = response.status, message = response.message)
+            }
         }
     }
 }
 
-fun Route.refreshTokenEndpoint() {
-    val userCase: RefreshTokenUseCase by inject()
+fun Application.refreshTokenEndpoint() { //todo: revert to Routing extension after new koin fix
+    val userCase: RefreshTokenUseCase by inject<RefreshTokenUseCase>()
 
-    post(ENDPOINT_REFRESH) {
-        val refreshToken = call.receive<RefreshTokenDto>()
+    routing {
+        post(ENDPOINT_REFRESH) {
+            val refreshToken = call.receive<RefreshTokenDto>()
 
-        when (val response = userCase(request = refreshToken)) {
-            is ServerResponse.Data -> call.respond(response.data)
-            is ServerResponse.ErrorStatus -> call.respond(status = response.status, message = response.message)
+            when (val response = userCase(request = refreshToken)) {
+                is ServerResponse.Data -> call.respond(response.data)
+                is ServerResponse.ErrorStatus -> call.respond(status = response.status, message = response.message)
+            }
         }
     }
 }
