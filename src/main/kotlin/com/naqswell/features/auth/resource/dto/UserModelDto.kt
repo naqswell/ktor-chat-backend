@@ -1,4 +1,4 @@
-package com.naqswell.features.auth.resource.dto.response
+package com.naqswell.features.auth.resource.dto
 
 import kotlinx.serialization.Serializable
 

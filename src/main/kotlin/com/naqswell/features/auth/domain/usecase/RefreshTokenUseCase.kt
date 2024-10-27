@@ -1,14 +1,13 @@
-package com.naqswell.features.auth.resource.usecase
+package com.naqswell.features.auth.domain.usecase
 
-import com.naqswell.common.ServerResponse
+import com.naqswell.common.Resource
 import com.naqswell.config.AuthHocon
+import com.naqswell.features.auth.domain.model.Auth
+import com.naqswell.features.auth.domain.model.RefreshToken
 import com.naqswell.features.auth.domain.repository.UserRepository
-import com.naqswell.features.auth.resource.dto.RefreshTokenDto
-import com.naqswell.features.auth.resource.dto.response.AuthResponseDto
 import com.naqswell.security.token.TokenClaim
 import com.naqswell.security.token.TokenConfig
 import com.naqswell.security.token.TokenService
-import io.ktor.http.*
 
 internal class RefreshTokenUseCase(
     private val userRepository: UserRepository,
@@ -16,15 +15,12 @@ internal class RefreshTokenUseCase(
     private val tokenService: TokenService,
     private val authConf: AuthHocon,
 ) {
-    suspend operator fun invoke(request: RefreshTokenDto): ServerResponse<AuthResponseDto> {
+    suspend operator fun invoke(request: RefreshToken): Resource<Auth, ErrorData> {
 
         /** Check if refresh token is actual **/
         val savedUser = userRepository.getByToken(request.token)
             ?: run {
-                return ServerResponse.ErrorStatus(
-                    status = HttpStatusCode.Forbidden,
-                    message = "ERROR_NO_SUCH_REFRESH_TOKEN"
-                )
+                return Resource.Error(ErrorData.NoSuchRefreshToken)
             }
 
         /** Get payload data **/
@@ -33,10 +29,7 @@ internal class RefreshTokenUseCase(
             config = tokenConfig,
             payload = authConf.jwt.payloads.user.userEmail
         ) ?: run {
-            return ServerResponse.ErrorStatus(
-                status = HttpStatusCode.Forbidden,
-                message = "ERROR_INVALID_REFRESH_TOKEN"
-            )
+            return Resource.Error(ErrorData.InvalidRefreshToken)
         }
 
         val userClaim = TokenClaim(
@@ -50,12 +43,16 @@ internal class RefreshTokenUseCase(
         /** Update refresh token in db **/
         userRepository.update(old = savedUser, new = savedUser.copy(refreshToken = refreshToken))
 
-        return ServerResponse.Data(
-            AuthResponseDto(
+        return Resource.Success(
+            Auth(
                 accessToken = accessToken,
                 refreshToken = refreshToken
             )
         )
+    }
 
+    internal sealed class ErrorData(val message: String) {
+        data object NoSuchRefreshToken : ErrorData("ERROR_NO_SUCH_REFRESH_TOKEN")
+        data object InvalidRefreshToken : ErrorData("ERROR_INVALID_REFRESH_TOKEN")
     }
 }

@@ -1,12 +1,16 @@
 package com.naqswell.features.auth.resource
 
-import com.naqswell.common.ServerResponse
+import com.naqswell.common.Resource
 import com.naqswell.features.auth.resource.dto.RefreshTokenDto
-import com.naqswell.features.auth.resource.dto.request.LoginRequestDto
-import com.naqswell.features.auth.resource.dto.request.SignupRequestDto
-import com.naqswell.features.auth.resource.usecase.LoginUseCase
-import com.naqswell.features.auth.resource.usecase.RefreshTokenUseCase
-import com.naqswell.features.auth.resource.usecase.SignUpUseCase
+import com.naqswell.features.auth.resource.dto.LoginDto
+import com.naqswell.features.auth.resource.dto.SignupDto
+import com.naqswell.features.auth.domain.usecase.LoginUseCase
+import com.naqswell.features.auth.domain.usecase.LoginUseCase.ErrorData as LoginErrorData
+import com.naqswell.features.auth.domain.usecase.RefreshTokenUseCase
+import com.naqswell.features.auth.domain.usecase.RefreshTokenUseCase.ErrorData as RefreshTokenErrorData
+import com.naqswell.features.auth.domain.usecase.SignUpUseCase
+import com.naqswell.features.auth.domain.usecase.SignUpUseCase.ErrorData as SignUpErrorData
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -22,11 +26,17 @@ fun Application.signupEndpoint() { //todo: revert to Routing extension after new
 
     routing {
         post(ENDPOINT_SIGNUP) {
-            val request = call.receive<SignupRequestDto>()
+            val request = call.receive<SignupDto>()
 
-            when (val response = useCase(request = request)) {
-                is ServerResponse.Data -> call.respond(response.data)
-                is ServerResponse.ErrorStatus -> call.respond(status = response.status, message = response.message)
+            when (val response = useCase(request = request.toDomain())) {
+                is Resource.Success -> call.respond(response.data.toDto())
+                is Resource.Error -> {
+                    val status = when (response.errorData) {
+                        SignUpErrorData.InvalidUsernameOrEmailOrPassword -> HttpStatusCode.UnprocessableEntity
+                        SignUpErrorData.UserAlreadyExist -> HttpStatusCode.Conflict
+                    }
+                    call.respond(status = status, message = response.errorData.message)
+                }
             }
         }
     }
@@ -38,11 +48,19 @@ fun Application.loginEndpoint() { //todo: revert to Routing extension after new 
 
     routing {
         post(ENDPOINT_LOGIN) {
-            val request = call.receive<LoginRequestDto>()
+            val request = call.receive<LoginDto>()
 
-            when (val response = useCase(request = request)) {
-                is ServerResponse.Data -> call.respond(response.data)
-                is ServerResponse.ErrorStatus -> call.respond(status = response.status, message = response.message)
+            when (val response = useCase(request = request.toDomain())) {
+                is Resource.Success -> call.respond(response.data.toDto())
+                is Resource.Error -> {
+                    val status = when (response.errorData) {
+                        LoginErrorData.InvalidCredentials,
+                        LoginErrorData.MissingEmail,
+                        LoginErrorData.MissingPassword,
+                        LoginErrorData.UserNotFound -> HttpStatusCode.UnprocessableEntity
+                    }
+                    call.respond(status = status, message = response.errorData.message)
+                }
             }
         }
     }
@@ -55,9 +73,15 @@ fun Application.refreshTokenEndpoint() { //todo: revert to Routing extension aft
         post(ENDPOINT_REFRESH) {
             val refreshToken = call.receive<RefreshTokenDto>()
 
-            when (val response = userCase(request = refreshToken)) {
-                is ServerResponse.Data -> call.respond(response.data)
-                is ServerResponse.ErrorStatus -> call.respond(status = response.status, message = response.message)
+            when (val response = userCase(request = refreshToken.toDomain())) {
+                is Resource.Success -> call.respond(response.data.toDto())
+                is Resource.Error -> {
+                    val status = when(response.errorData) {
+                        RefreshTokenErrorData.InvalidRefreshToken,
+                        RefreshTokenErrorData.NoSuchRefreshToken -> HttpStatusCode.Forbidden
+                    }
+                    call.respond(status = status, message = response.errorData.message)
+                }
             }
         }
     }

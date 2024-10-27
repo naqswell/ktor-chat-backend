@@ -15,19 +15,21 @@ fun Application.testEmailPayloadEndpoint() {
     val config: AuthHocon by inject<AuthHocon>()
 
     routing {
-        post(ENDPOINT_TEST_PAYLOAD) {//todo: revert to Routing extension after new koin fix
-            val getPayload: (String) -> String? = { payload: String ->
-                call.principal<JWTPrincipal>()?.payload?.getClaim(payload)?.asString()
+        authenticate("auth-jwt") {
+            post(ENDPOINT_TEST_PAYLOAD) {//todo: revert to Routing extension after new koin fix
+                val getPayload: (String) -> String? = { payload: String ->
+                    call.principal<JWTPrincipal>()?.payload?.getClaim(payload)?.asString()
+                }
+
+                val payload = config.jwt.payloads.user.userEmail
+                val email = getPayload(payload)
+
+                val response = TestResponseDto(
+                    data = "$email"
+                )
+
+                call.respond(response)
             }
-
-            val payload = config.jwt.payloads.user.userEmail
-            val email = getPayload(payload)
-
-            val response = TestResponseDto(
-                data = "$email"
-            )
-
-            call.respond(response)
         }
     }
 }

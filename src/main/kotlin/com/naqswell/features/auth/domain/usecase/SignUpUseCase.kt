@@ -1,40 +1,39 @@
-package com.naqswell.features.auth.resource.usecase
+package com.naqswell.features.auth.domain.usecase
 
-import com.naqswell.common.ServerResponse
+import com.naqswell.common.Resource
+import com.naqswell.config.AuthHocon
 import com.naqswell.features.auth.data.toDto
 import com.naqswell.features.auth.data.toUserModel
+import com.naqswell.features.auth.domain.model.Auth
+import com.naqswell.features.auth.domain.model.Signup
 import com.naqswell.features.auth.domain.repository.UserRepository
-import com.naqswell.features.auth.resource.dto.request.SignupRequestDto
-import com.naqswell.features.auth.resource.dto.response.AuthResponseDto
 import com.naqswell.security.hashing.HashingService
 import com.naqswell.security.token.TokenClaim
 import com.naqswell.security.token.TokenConfig
 import com.naqswell.security.token.TokenService
-import io.ktor.http.*
 
 internal class SignUpUseCase(
     private val userRepository: UserRepository,
     private val tokenService: TokenService,
     private val tokenConfig: TokenConfig,
-    private val hashingService: HashingService
+    private val hashingService: HashingService,
+    private val config: AuthHocon
 ) {
-    suspend operator fun invoke(request: SignupRequestDto): ServerResponse<AuthResponseDto> {
+    suspend operator fun invoke(request: Signup): Resource<Auth, ErrorData> {
 
         if (request.username.isEmpty() || request.email.isEmpty() || request.password.isEmpty())
-            return ServerResponse.ErrorStatus(
-                status = HttpStatusCode.UnprocessableEntity,
-                message = "Invalid username, email or password"
-            )
-
+            return Resource.Error(ErrorData.InvalidUsernameOrEmailOrPassword)
 
         // Check db for existing user by username, to check username is unique
         return when (userRepository.getByUsernameOrEmail(username = request.username, email = request.email)) {
             // Is new user
             null -> {
-                val userClaim = TokenClaim(name = "userEmail", value = request.email)
+                val userClaim = TokenClaim(name = config.jwt.payloads.user.userEmail, value = request.email)
 
-                val accessToken = tokenService.generate(tokenConfig, tokenConfig.expirationSeconds.accessToken, userClaim)
-                val refreshToken = tokenService.generate(tokenConfig, tokenConfig.expirationSeconds.refreshToken, userClaim)
+                val accessToken =
+                    tokenService.generate(tokenConfig, tokenConfig.expirationSeconds.accessToken, userClaim)
+                val refreshToken =
+                    tokenService.generate(tokenConfig, tokenConfig.expirationSeconds.refreshToken, userClaim)
 
                 val saltedHash = hashingService.generateSaltedHash(request.password)
 
@@ -45,8 +44,8 @@ internal class SignUpUseCase(
                     refreshToken = refreshToken
                 )
 
-                ServerResponse.Data(
-                    AuthResponseDto(
+                Resource.Success(
+                    Auth(
                         data = userRepository.insert(userModel)?.toDto(),
                         accessToken = accessToken,
                         refreshToken = refreshToken
@@ -55,7 +54,12 @@ internal class SignUpUseCase(
             }
 
             // User already exist
-            else -> ServerResponse.ErrorStatus(status = HttpStatusCode.Conflict, message = "User already exist")
+            else -> Resource.Error(ErrorData.UserAlreadyExist)
         }
+    }
+
+    internal sealed class ErrorData(val message: String) {
+        data object InvalidUsernameOrEmailOrPassword : ErrorData("ERROR_INVALID_USERNAME_OR_EMAIL_OR_PASSWORD")
+        data object UserAlreadyExist : ErrorData("ERROR_USER_ALREADY_EXIST")
     }
 }
