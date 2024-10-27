@@ -1,11 +1,11 @@
 package com.naqswell.features.auth.data
 
 import com.naqswell.db.dbo.UserDbo
+import com.naqswell.features.auth.domain.model.Signup
 import com.naqswell.features.auth.domain.model.UserModel
-import com.naqswell.features.auth.resource.dto.request.SignupRequestDto
-import com.naqswell.features.auth.resource.dto.response.UserModelDto
+import com.naqswell.features.auth.resource.dto.UserModelDto
 
-fun SignupRequestDto.toUserModel(
+fun Signup.toUserModel(
     salt: String,
     hash: String,
     accessToken: String,

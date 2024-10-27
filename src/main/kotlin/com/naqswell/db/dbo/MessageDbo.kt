@@ -1,4 +1,4 @@
-package com.naqswell.features.chat.data.dbo
+package com.naqswell.db.dbo
 
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
